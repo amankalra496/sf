@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Salesforce CORS Test</title>
+</head>
+<body>
+
+<h2>Salesforce Wildcard / Exact CORS Test</h2>
+
+<button onclick="loginToSalesforce()">
+    Login & Test Salesforce API
+</button>
+
+<pre id="result"></pre>
+
+<script>
+
+const CLIENT_ID =
+'3MVG9pRzvMkjMb6lGz8N6xRMzRqlEvM8QtjBSPmQfks8J9VRzbt.uCZv1dVpbnQebVS4.r33SIx83qNBxI56e';
+
+const REDIRECT_URI = window.location.origin;
+
+const SF_DOMAIN =
+'https://fresher193-dev-ed.develop.my.salesforce.com';
+
+function loginToSalesforce() {
+
+    const authUrl =
+        `${SF_DOMAIN}/services/oauth2/authorize` +
+        `?response_type=token` +
+        `&client_id=${CLIENT_ID}` +
+        `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
+
+    window.location.href = authUrl;
+}
+
+window.onload = async function() {
+
+    const hash = window.location.hash;
+
+    if(hash.includes('access_token')) {
+
+        const params =
+            new URLSearchParams(hash.substring(1));
+
+        const accessToken =
+            params.get('access_token');
+
+        document.getElementById('result').innerText =
+            'Access Token Received\n\nCalling Salesforce API...';
+
+        testAPI(accessToken);
+    }
+}
+
+async function testAPI(accessToken) {
+
+    try {
+
+        const response = await fetch(
+            `${SF_DOMAIN}/services/data/v62.0/`,
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            }
+        );
+
+        const data = await response.json();
+
+        document.getElementById('result').innerText =
+            JSON.stringify(data, null, 2);
+
+    } catch(error) {
+
+        document.getElementById('result').innerText =
+            'CORS ERROR:\n\n' + error;
+
+        console.error(error);
+    }
+}
+
+</script>
+
+</body>
+</html>
